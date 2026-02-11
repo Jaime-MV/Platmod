@@ -12,12 +12,6 @@ interface PerfilDetalleRepository extends JpaRepository<PerfilDetalle, Long> {
     Optional<PerfilDetalle> findByUsuario(Usuario usuario);
 }
 
-// PlanSuscripcion Repository
-@Repository
-interface PlanSuscripcionRepository extends JpaRepository<PlanSuscripcion, Long> {
-    List<PlanSuscripcion> findByOrderByPrecioAsc();
-}
-
 // Suscripcion Repository
 @Repository
 interface SuscripcionRepository extends JpaRepository<Suscripcion, Long> {
