@@ -20,34 +20,40 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    public SecurityConfig() {
-        System.out.println("--- CARGANDO SECURITY CONFIG ---");
-    }
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // 1. Desactivar CSRF (Indispensable para APIs REST)
+                // 1. Desactivar CSRF para APIs
                 .csrf(AbstractHttpConfigurer::disable)
-                // 2. Configurar CORS usando el Bean que definimos abajo
+
+                // 2. Aplicar configuracion de CORS
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
+                // 3. UNICO bloque de autorizacion (Reglas de arriba hacia abajo)
                 .authorizeHttpRequests(auth -> auth
-                        // 3. Rutas publicas (Login y Registro) - SIN TILDES en comentarios
+                        // Rutas de Auth y Registro
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/usuarios").permitAll()
-                        // 4. Todo lo demas requiere verificacion
+
+                        // Rutas de Cursos y Planes publicas (GET)
+                        .requestMatchers(HttpMethod.GET, "/api/cursos/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/planes/**").permitAll()
+
+                        // El resto requiere TOKEN
                         .anyRequest().authenticated()
                 );
+
         return http.build();
     }
 
-    // BEAN DE CORS: Permite que Postman y el Frontend se conecten sin ser bloqueados
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("*")); // Permite cualquier origen
+        // Cambia "*" por "http://localhost:5173" si quieres mas seguridad
+        configuration.setAllowedOrigins(List.of("*"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(false); // Cambiar a true si usas Cookies o Sesiones
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
