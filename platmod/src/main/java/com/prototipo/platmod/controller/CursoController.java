@@ -43,7 +43,8 @@ public class CursoController {
                 curso.getIdCurso(),
                 curso.getTitulo(),
                 curso.getDescripcion(),
-                curso.getPortadaUrl()
+                curso.getPortadaUrl(),
+                curso.getEstado()
         );
     }
 
