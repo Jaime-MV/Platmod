@@ -19,6 +19,12 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
+    private String lastValidationFailure = ""; // Debugging only
+
+    public String getLastValidationFailure() {
+        return lastValidationFailure;
+    }
+
     // Clave de ejemplo. En producción usa variables de entorno.
     private static final String SECRET_KEY = "mi_clave_secreta_super_segura_y_larga_para_firmar_tokens_12345";
 
@@ -38,8 +44,22 @@ public class JwtService {
 
     // 2. VALIDAR TOKEN (¡ESTO TE FALTABA!)
     public boolean isTokenValid(String token, UserDetails userDetails) {
+        lastValidationFailure = "";
         final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+
+        boolean usernameMatch = username.equals(userDetails.getUsername());
+        if (!usernameMatch) {
+            lastValidationFailure = "Username mismatch: Token=" + username + " vs DB=" + userDetails.getUsername();
+            return false;
+        }
+
+        boolean expired = isTokenExpired(token);
+        if (expired) {
+            lastValidationFailure = "Token expired";
+            return false;
+        }
+
+        return true;
     }
 
     // 3. EXTRAER USUARIO (USERNAME)

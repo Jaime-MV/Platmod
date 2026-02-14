@@ -54,6 +54,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             userDetails.getAuthorities());
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
+                } else {
+                    System.out.println("⛔ Token inválido: " + jwtService.getLastValidationFailure());
+                    request.setAttribute("auth_error", "Token inválido: " + jwtService.getLastValidationFailure());
                 }
             }
         } catch (Exception e) {
