@@ -20,6 +20,6 @@ public class DocenteController {
     public ResponseEntity<List<DocenteHomeDTO>> obtenerDocentesParaHome() {
         // Limitamos a 4 docentes para que se vea estético como en Platzi
         List<DocenteHomeDTO> docentes = docenteRepository.obtenerDocentesHome();
-        return ResponseEntity.ok(docentes.stream().limit(4).toList());
+        return ResponseEntity.ok(docentes.stream().limit(8).toList());
     }
 }
