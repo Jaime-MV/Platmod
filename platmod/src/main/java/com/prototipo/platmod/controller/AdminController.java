@@ -1,6 +1,7 @@
 package com.prototipo.platmod.controller;
 
 import com.prototipo.platmod.dto.CursoDTO;
+import com.prototipo.platmod.dto.DocenteAsignacionDTO;
 import com.prototipo.platmod.entity.*;
 import com.prototipo.platmod.repository.*;
 import com.prototipo.platmod.service.AsignacionDocenteService;
@@ -28,6 +29,8 @@ public class AdminController {
     private AsignacionDocenteService asignacionService;
     @Autowired
     private AsignacionDocenteRepository asignacionRepository;
+    @Autowired
+    private DocenteRepository docenteRepository;
 
     // --- GESTION DE PLANES ---
     @PutMapping("/planes/{id}")
@@ -133,6 +136,36 @@ public class AdminController {
         AsignacionDocente guardado = asignacionService.crear(nuevaAsignacion);
 
         return ResponseEntity.ok(guardado);
+    }
+
+    // 4. NUEVO: Listar docentes con estado de asignación para un curso
+    @GetMapping("/cursos/{idCurso}/docentes-asignacion")
+    public ResponseEntity<List<DocenteAsignacionDTO>> obtenerDocentesParaAsignacion(@PathVariable Long idCurso) {
+        // 1. Validar curso
+        Curso curso = cursoRepository.findById(idCurso)
+                .orElseThrow(() -> new RuntimeException("Curso no encontrado"));
+
+        // 2. Obtener todos los docentes activos
+        List<Docente> docentes = docenteRepository.findByEstadoDocente(true);
+
+        // 3. Mapear a DTO verificando si ya están asignados
+        List<DocenteAsignacionDTO> resultado = docentes.stream().map(docente -> {
+            boolean asignado = asignacionRepository.existsByCursoAndUsuario(curso, docente.getUsuario());
+
+            // Buscar foto de perfil si existe (opcional, por ahora null o placeholder)
+            String fotoUrl = null;
+            // Si quisieras la foto, tendrías que inyectar PerfilDetalleRepository o sacarla
+            // de alguna relación en Docente
+
+            return new DocenteAsignacionDTO(
+                    docente.getUsuario().getIdUsuario(),
+                    docente.getUsuario().getNombre(),
+                    docente.getEspecialidad(),
+                    fotoUrl,
+                    asignado);
+        }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(resultado);
     }
 
     @GetMapping("/docentes-list")
